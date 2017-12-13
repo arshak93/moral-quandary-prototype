@@ -15,7 +15,7 @@ module.exports = class GameServiceInitializer extends ActionHero.Initializer {
 		ActionHero.api['gameService'] = {};
 		const api = ActionHero.api;
 		const gameService = api.gameService;
-		gameService.usersNumber = 2;
+		gameService.usersNumber = 4;
 		gameService.gameResults = {};
 
 		api.chatRoom.generateMemberDetails = (connection) => {
@@ -30,6 +30,14 @@ module.exports = class GameServiceInitializer extends ActionHero.Initializer {
 				id: memberData.id,
 				user: memberData.user
 			};
+		};
+
+		gameService.resetGame = async (roomId) => {
+			let exists = await api.chatRoom.exists(roomId);
+
+			if(exists) {
+				await api.chatRoom.destroy(roomId);
+			}
 		};
 
 		gameService.joinRoom = async (roomId, connectionId) => {
@@ -74,10 +82,10 @@ module.exports = class GameServiceInitializer extends ActionHero.Initializer {
 			const gameResult = gameService.gameResults[roomId];
 			gameResult.addPrediction(senderId, targetUserId, answer);
 
-			if(gameResult.complete) {
+			if (gameResult.complete) {
 				let push = {
 					gameResult: gameResult.view
-				}
+				};
 				api.networking.pushToAll(roomId, 'gameEnd', push);
 			}
 		};
